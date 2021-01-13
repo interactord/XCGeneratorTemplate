@@ -1,0 +1,56 @@
+targets:
+  MyApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+      - path: Resources
+      - path: Supporting Files
+    dependencies:
+      - sdk: Foundation.framework
+      - sdk: UIKit.framework
+      - target: Base
+    attributes:
+      ProvisioningStyle: Manual
+    preBuildScripts:
+      - name: SwiftLint
+        script: |
+          if [[ -z "${GITHUB_WORKFLOW}" ]]; then
+          ${PODS_ROOT}/SwiftLint/swiftlint lint \
+            --config "${SRCROOT}/.swiftlint.yml" \
+            --path "${SRCROOT}/Projects/MyApp"
+          fi
+    settings:
+      base:
+        PRODUCT_NAME: MyApp
+        PRODUCT_BUNDLE_IDENTIFIER: com.myapp.ios
+        MARKETING_VERSION: 0.1.0
+        CURRENT_PROJECT_VERSION: 1
+        INFOPLIST_FILE: "$(SRCROOT)/Projects/MyApp/Supporting Files/Info.plist"
+        TARGETED_DEVICE_FAMILY: 1
+        DEVELOPMENT_TEM: FNDVP9SLK2
+        PROVISIONING_PROFILE_SPECIFIER: "match AppStore com.myapp.ios.release"
+        CODE_SIGN_ENTITLEMENTS: ${SRCROOT}/Projects/MyApp/Supporting Files/MyApp.entitlements
+      config:
+        degug:
+          CODE_SIGN_IDENTITY: Apple Developer
+        release:
+          CODE_SIGN_IDENTITY: Apple Distribution
+
+  MyAppTests:
+    templates: [UnitTest]
+    templateAttributes:
+      testTarget: MyApp
+
+schemes:
+  MyApp:
+    build:
+      targets:
+        MyApp: all
+        MyAppTests: [test]
+    run:
+      environmentVariables:
+        OS_ACTIVITY_MODE: disable
+    test:
+      gatherCoverageData: true
+      targets: [MyAppTests]
